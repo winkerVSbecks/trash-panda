@@ -1,0 +1,23 @@
+{
+  "name": "trash-panda",
+  "version": "1.0.0",
+  "description": "what is my waste collection schedule for this week",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild": "rm -rf dist",
+    "build": "parcel build index.html --public-url ./",
+    "prestart": "rm -rf dist",
+    "start": "parcel index.html -p 3000"
+  },
+  "author": "Varun Vachhar",
+  "license": "MIT",
+  "dependencies": {
+    "folktale": "^2.0.1",
+    "ramda": "^0.25.0"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.6.1",
+    "parcel-bundler": "^1.4.1"
+  }
+}
