@@ -1,28 +1,21 @@
 import * as R from 'ramda';
 import Future from 'folktale/concurrency/future';
-import Result from 'folktale/result';
 
-import dataUrl from './data.csv';
-import { trace, asDateString, asDate, now } from './utils';
+import { asDateString, asDate, now } from './utils';
 import { findSchedule } from './schedule';
 
 // scheduleMarkup :: { items, pickupDay } -> HTML String
-const scheduleMarkup = schedule => `
-<h1 class="f3 f1-l mt0 mb4 mb5-ns lh-title">
-  Collection Schedule <br />
-  <span class="f4 f2-l">${schedule.pickupDay}</span>
-</h1>
-<div class="flex f1 f-subheadline-l">
-  ${schedule.items
-    .map(
-      item =>
-        `<div class="mr4" role="img" aria-label="${item.label}">${
-          item.icon
-        }</div>`,
-    )
-    .join('')}
-</div>
-`;
+const scheduleMarkup = R.evolve({
+  items: items =>
+    items
+      .map(
+        (item, idx) =>
+          `<span class="${
+            idx < items.length - 1 ? 'mr3' : ''
+          }" role="img" aria-label="${item.label}">${item.icon}</span>`,
+      )
+      .join(''),
+});
 
 const itemDetails = {
   christmasTree: {
@@ -68,28 +61,39 @@ const scheduleComponent = R.compose(
   }),
 );
 
-const scheduleForToday = findSchedule(
-  /* now() */ asDate('1/10/17'),
-  'Thursday1',
-)
-  .map(scheduleComponent)
-  .orElse(Future.of);
+const scheduleForToday = scheduleType =>
+  findSchedule(now(), scheduleType)
+    .map(scheduleComponent)
+    .orElse(Future.of);
 
-/**
- * DOM Stuff
- */
 // cssQuery :: String -> Node -> NodeList
 const cssQuery = R.invoker(1, 'querySelector');
 
-// setContent :: Element -> Markup -> Element
-const setContent = element => markup => {
-  element.innerHTML = markup;
-  return element;
+// render :: PickupDayElement -> ItemsElement -> Markup -> Element
+const render = R.lift(itemsEl => pickupDayEl => data => {
+  pickupDayEl.textContent = data.pickupDay;
+  itemsEl.innerHTML = data.items;
+});
+
+// calendarOnChange :: Element -> void
+const calendarOnChange = el => {
+  const scheduleType = el.target.value;
+  trashPanda(scheduleType);
 };
 
 /**
  * Trash Panda App
  */
-const render = R.lift(setContent);
+Future.of(cssQuery('#js-calendar', document)).map(el => {
+  el.onchange = calendarOnChange;
+});
 
-render(Future.of(cssQuery('#app', document)), scheduleForToday);
+const trashPanda = scheduleType =>
+  render(
+    Future.of(cssQuery('#js-items', document)),
+    Future.of(cssQuery('#js-pickup-date', document)),
+    scheduleForToday(scheduleType),
+  );
+
+// Initialize
+trashPanda('Thursday1');
