@@ -50,7 +50,10 @@ const pickupItemIcons = (icons =>
   ))(itemDetails);
 
 // humanizedWeekStarting :: Schedule -> DateString
-const humanizedWeekStarting = R.compose(asDateString, R.prop('weekStarting'));
+const humanizedWeekStarting = R.compose(
+  asDateString,
+  R.prop('weekStarting'),
+);
 
 // scheduleComponent :: Schedule -> Markup
 const scheduleComponent = R.compose(
@@ -88,12 +91,13 @@ Future.of(cssQuery('#js-calendar', document)).map(el => {
   el.onchange = calendarOnChange;
 });
 
-const trashPanda = scheduleType =>
+const trashPanda = scheduleType => {
   render(
     Future.of(cssQuery('#js-items', document)),
     Future.of(cssQuery('#js-pickup-date', document)),
     scheduleForToday(scheduleType),
   );
+};
 
 // Initialize
-trashPanda('Thursday1');
+trashPanda('Thursday 1');

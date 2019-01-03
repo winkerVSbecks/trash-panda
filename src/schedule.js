@@ -8,14 +8,14 @@ import dataUrl from './data.csv';
 
 const calendarDays = {
   MondayNight: 1,
-  Tuesday1: 2,
-  Tuesday2: 2,
-  Wednesday1: 3,
-  Wednesday2: 3,
-  Thursday1: 4,
-  Thursday2: 4,
-  Friday1: 5,
-  Friday2: 5,
+  'Tuesday 1': 2,
+  'Tuesday 2': 2,
+  'Wednesday 1': 3,
+  'Wednesday 2': 3,
+  'Thursday 1': 4,
+  'Thursday 2': 4,
+  'Friday 1': 5,
+  'Friday 2': 5,
 };
 
 // pickupDate :: CalendarDays -> Date -> ScheduleType -> Date
@@ -35,7 +35,12 @@ const byTime = R.curry(
 
 // findNearestDayTo :: Date -> ScheduleType -> Schedule
 const findNearestDayTo = date =>
-  R.find(R.compose(byTime(date), R.prop('weekStarting')));
+  R.find(
+    R.compose(
+      byTime(date),
+      R.prop('weekStarting'),
+    ),
+  );
 
 // dayToBool :: Any -> Boolean
 const dayToBool = R.flip(R.contains)(['M', 'T', 'W', 'R', 'F', 'S']);
@@ -81,12 +86,16 @@ const parse = res =>
     : Future.rejected('⚠️ Unable to fetch schedule data');
 
 // getText :: URL -> Future Reason String
-const getText = R.composeK(parse, httpGet);
+const getText = R.composeK(
+  parse,
+  httpGet,
+);
 
 // findSchedule :: Date -> ScheduleType -> Future Reason Schedule
 export const findSchedule = (date, scheduleType) =>
   getText(dataUrl)
     .map(csvToJson)
     .map(R.map(normalizeSchedule))
+    .map(R.tap(console.log))
     .map(scheduleFor(date, scheduleType))
     .chain(resultToFuture);
